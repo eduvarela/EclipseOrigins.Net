@@ -1,24 +1,43 @@
 syntax = "proto3";
 
 package eclipseorigins.protocol.v1;
-
-option csharp_namespace = "EclipseOrigins.Shared.Protocol.V1";
+option csharp_namespace = "EclipseOrigins.Protocol.V1";
 
 import "common.proto";
 
+message Vector3 {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+message EnterWorldRequest {
+  ProtocolMetadata metadata = 1;
+  string character_id = 2;
+}
+
+message EnterWorldResponse {
+  ProtocolMetadata metadata = 1;
+  bool success = 2;
+  string world_instance_id = 3;
+  string message = 4;
+}
+
 message ClientInputMove {
-  uint64 client_tick = 1;
-  float move_x = 2;
-  float move_y = 3;
-  bool is_running = 4;
+  string character_id = 1;
+  Vector3 direction = 2;
+  float magnitude = 3;
+  uint64 client_tick = 4;
 }
 
 message EntityState {
-  uint64 entity_id = 1;
-  Vector2 position = 2;
+  string entity_id = 1;
+  Vector3 position = 2;
+  Vector3 velocity = 3;
 }
 
 message ServerSnapshot {
-  uint64 server_tick = 1;
-  repeated EntityState entities = 2;
+  ProtocolMetadata metadata = 1;
+  uint64 server_tick = 2;
+  repeated EntityState entities = 3;
 }

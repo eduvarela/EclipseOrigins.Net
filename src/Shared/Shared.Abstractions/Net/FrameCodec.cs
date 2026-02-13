@@ -1,7 +1,6 @@
-using System;
 using System.Buffers.Binary;
 
-namespace EclipseOrigins.Shared.Abstractions.Net;
+namespace EclipseOriginsModern.Shared.Abstractions.Net;
 
 public static class FrameCodec
 {
@@ -9,10 +8,10 @@ public static class FrameCodec
 
     public static byte[] Encode(ushort messageType, ReadOnlySpan<byte> payload)
     {
-        int bodyLength = 2 + payload.Length;
-        byte[] result = new byte[HeaderSize + payload.Length];
-        BinaryPrimitives.WriteUInt32LittleEndian(result.AsSpan(0, 4), (uint)bodyLength);
-        BinaryPrimitives.WriteUInt16LittleEndian(result.AsSpan(4, 2), messageType);
+        var bodyLength = checked((uint)(2 + payload.Length));
+        var result = new byte[HeaderSize + payload.Length];
+        BinaryPrimitives.WriteUInt32BigEndian(result.AsSpan(0, 4), bodyLength);
+        BinaryPrimitives.WriteUInt16BigEndian(result.AsSpan(4, 2), messageType);
         payload.CopyTo(result.AsSpan(HeaderSize));
         return result;
     }
@@ -27,21 +26,20 @@ public static class FrameCodec
             return false;
         }
 
-        uint bodyLength = BinaryPrimitives.ReadUInt32LittleEndian(buffer.Slice(0, 4));
+        var bodyLength = BinaryPrimitives.ReadUInt32BigEndian(buffer[..4]);
         if (bodyLength < 2)
         {
-            throw new InvalidOperationException("Invalid frame length.");
+            throw new InvalidOperationException("Invalid frame body length.");
         }
 
-        int totalLength = checked((int)bodyLength + 4);
+        var totalLength = checked((int)bodyLength + 4);
         if (buffer.Length < totalLength)
         {
             return false;
         }
 
-        ushort messageType = BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(4, 2));
-        byte[] payload = buffer.Slice(HeaderSize, totalLength - HeaderSize).ToArray();
-
+        var messageType = BinaryPrimitives.ReadUInt16BigEndian(buffer.Slice(4, 2));
+        var payload = buffer.Slice(HeaderSize, totalLength - HeaderSize).ToArray();
         bytesConsumed = totalLength;
         frame = new Frame(messageType, payload);
         return true;

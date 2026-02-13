@@ -1,11 +1,4 @@
-using System;
+using EclipseOriginsModern.Shared.Protocol;
 
-namespace EclipseOrigins.GameClient;
-
-internal static class Program
-{
-    private static void Main()
-    {
-        Console.WriteLine("Eclipse Origins Modern Client bootstrap placeholder.");
-    }
-}
+var startupPing = new PingMessage(DateTimeOffset.UtcNow);
+Console.WriteLine($"GameClient bootstrap OK ({startupPing.SentAt:O})");

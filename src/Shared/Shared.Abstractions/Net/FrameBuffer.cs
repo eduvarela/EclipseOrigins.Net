@@ -1,18 +1,19 @@
-using System;
-using System.Collections.Generic;
-
-namespace EclipseOrigins.Shared.Abstractions.Net;
+namespace EclipseOriginsModern.Shared.Abstractions.Net;
 
 public sealed class FrameBuffer
 {
     private readonly List<byte> _buffer = new();
 
+    public int BufferedBytes => _buffer.Count;
+
     public void Append(ReadOnlySpan<byte> data)
     {
-        foreach (byte b in data)
+        if (data.IsEmpty)
         {
-            _buffer.Add(b);
+            return;
         }
+
+        _buffer.AddRange(data.ToArray());
     }
 
     public bool TryReadFrame(out Frame frame)
@@ -23,8 +24,8 @@ public sealed class FrameBuffer
             return false;
         }
 
-        byte[] current = _buffer.ToArray();
-        if (!FrameCodec.TryDecode(current, out int consumed, out frame))
+        var snapshot = _buffer.ToArray();
+        if (!FrameCodec.TryDecode(snapshot, out var consumed, out frame))
         {
             return false;
         }

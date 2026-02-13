@@ -1,44 +1,19 @@
 syntax = "proto3";
 
 package eclipseorigins.protocol.v1;
-
-option csharp_namespace = "EclipseOrigins.Shared.Protocol.V1";
+option csharp_namespace = "EclipseOrigins.Protocol.V1";
 
 import "common.proto";
 
-message HandshakeRequest {
-  uint32 protocol_version = 1;
-  FeatureFlags feature_flags = 2;
-  string client_name = 3;
-}
-
-message HandshakeResponse {
-  bool accepted = 1;
-  uint32 protocol_version = 2;
-  FeatureFlags negotiated_feature_flags = 3;
-  string message = 4;
-}
-
 message LoginRequest {
-  string username = 1;
-  string password = 2;
+  ProtocolMetadata metadata = 1;
+  string username = 2;
+  string password = 3;
 }
 
 message LoginResponse {
-  bool success = 1;
-  string session_token = 2;
-  string failure_reason = 3;
-}
-
-message EnterWorldRequest {
-  string session_token = 1;
-  uint64 character_id = 2;
-}
-
-message EnterWorldResponse {
-  bool success = 1;
-  uint64 character_id = 2;
-  uint64 world_instance_id = 3;
-  Vector2 spawn_position = 4;
-  string failure_reason = 5;
+  ProtocolMetadata metadata = 1;
+  bool success = 2;
+  string session_token = 3;
+  string message = 4;
 }
