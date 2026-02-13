@@ -9,12 +9,14 @@ message ProtocolMetadata {
 }
 
 message HandshakeRequest {
-  ProtocolMetadata metadata = 1;
-  string client_name = 2;
+  string protocol_version = 1;
+  repeated string feature_flags = 2;
+  string client_name = 3;
 }
 
 message HandshakeResponse {
-  ProtocolMetadata metadata = 1;
-  bool accepted = 2;
-  string message = 3;
+  string protocol_version = 1;
+  repeated string feature_flags = 2;
+  bool accepted = 3;
+  string message = 4;
 }
