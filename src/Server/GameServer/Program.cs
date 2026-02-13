@@ -1,14 +1,34 @@
-using EclipseOriginsModern.Server.GameServer.Net.Dispatch;
-using EclipseOriginsModern.Server.GameServer.Net.Security;
-using EclipseOriginsModern.Shared.Protocol;
+using System.Net;
+using EclipseOrigins.Protocol.V1;
+using EclipseOriginsModern.Server.GameServer.Net.Pipeline;
+using EclipseOriginsModern.Server.GameServer.Net.Tcp;
+using EclipseOriginsModern.Shared.Abstractions.Net;
+using Google.Protobuf;
 
-var startupPing = new PingMessage(DateTimeOffset.UtcNow);
-Console.WriteLine($"GameServer bootstrap OK ({startupPing.SentAt:O})");
+var dispatcher = new MessageDispatcher();
 
-var dispatcher = new MessageDispatcher(
-    new RateLimiter(maxMessagesPerWindow: 30, window: TimeSpan.FromSeconds(1)),
-    new AbuseDetector(violationsBeforeDisconnect: 5, backoffDuration: TimeSpan.FromSeconds(2)));
+dispatcher.RegisterHandler(
+    MessageTypes.HandshakeRequest,
+    async (session, payload, cancellationToken) =>
+    {
+        var request = HandshakeRequest.Parser.ParseFrom(payload.Span);
+        var response = new HandshakeResponse
+        {
+            Accepted = true,
+            Message = $"Welcome {request.ClientName}"
+        };
 
-// Example server wiring: all inbound messages should be routed through this dispatcher.
-_ = dispatcher;
+        response.Metadata = new ProtocolMetadata
+        {
+            ProtocolVersion = request.Metadata.ProtocolVersion,
+        };
+        response.Metadata.FeatureFlags.Add(request.Metadata.FeatureFlags);
 
+        await session.SendAsync(MessageTypes.HandshakeResponse, response.ToByteArray(), cancellationToken);
+    });
+
+var endPoint = new IPEndPoint(IPAddress.Any, 7777);
+await using var server = new TcpServer(endPoint, dispatcher);
+
+Console.WriteLine($"GameServer listening on {endPoint}.");
+await server.RunAsync(CancellationToken.None);

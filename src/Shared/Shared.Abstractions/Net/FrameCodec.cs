@@ -2,66 +2,48 @@ using System.Buffers.Binary;
 
 namespace EclipseOriginsModern.Shared.Abstractions.Net;
 
-public readonly record struct Frame(ushort MessageType, byte[] Payload);
-
-public enum FrameDecodeStatus
-{
-    Success,
-    Incomplete,
-    Malformed
-}
-
 public static class FrameCodec
 {
-    public const int LengthPrefixSize = sizeof(uint);
-    public const int MessageTypeSize = sizeof(ushort);
-    public const int HeaderSize = LengthPrefixSize + MessageTypeSize;
+    public const int HeaderSize = 6; // uint32 length + uint16 msgType
 
     public static byte[] Encode(ushort messageType, ReadOnlySpan<byte> payload)
     {
-        var bodyLength = checked(payload.Length + MessageTypeSize);
-        var frame = new byte[checked(LengthPrefixSize + bodyLength)];
-
-        BinaryPrimitives.WriteUInt32BigEndian(frame.AsSpan(0, LengthPrefixSize), (uint)bodyLength);
-        BinaryPrimitives.WriteUInt16BigEndian(frame.AsSpan(LengthPrefixSize, MessageTypeSize), messageType);
-        payload.CopyTo(frame.AsSpan(HeaderSize));
-
-        return frame;
+        var bodyLength = checked((uint)(2 + payload.Length));
+        var result = new byte[HeaderSize + payload.Length];
+        BinaryPrimitives.WriteUInt32BigEndian(result.AsSpan(0, 4), bodyLength);
+        BinaryPrimitives.WriteUInt16BigEndian(result.AsSpan(4, 2), messageType);
+        payload.CopyTo(result.AsSpan(HeaderSize));
+        return result;
     }
 
-    public static FrameDecodeStatus TryDecode(ReadOnlySpan<byte> buffer, out Frame frame, out int bytesConsumed)
+    public static bool TryDecode(ReadOnlySpan<byte> buffer, out int bytesConsumed, out Frame frame)
     {
-        frame = default;
         bytesConsumed = 0;
+        frame = default;
 
-        if (buffer.Length < LengthPrefixSize)
+        if (buffer.Length < HeaderSize)
         {
-            return FrameDecodeStatus.Incomplete;
+            return false;
         }
 
-        var bodyLength = BinaryPrimitives.ReadUInt32BigEndian(buffer[..LengthPrefixSize]);
-        if (bodyLength < MessageTypeSize)
+        var bodyLength = BinaryPrimitives.ReadUInt32BigEndian(buffer[..4]);
+        if (bodyLength < 2)
         {
-            return FrameDecodeStatus.Malformed;
+            throw new InvalidOperationException("Invalid frame body length.");
         }
 
-        if (bodyLength > int.MaxValue - LengthPrefixSize)
-        {
-            return FrameDecodeStatus.Malformed;
-        }
-
-        var totalLength = checked((int)bodyLength + LengthPrefixSize);
+        var totalLength = checked((int)bodyLength + 4);
         if (buffer.Length < totalLength)
         {
-            return FrameDecodeStatus.Incomplete;
+            return false;
         }
 
-        var messageType = BinaryPrimitives.ReadUInt16BigEndian(buffer.Slice(LengthPrefixSize, MessageTypeSize));
-        var payloadLength = checked((int)bodyLength - MessageTypeSize);
-        var payload = buffer.Slice(HeaderSize, payloadLength).ToArray();
-
-        frame = new Frame(messageType, payload);
+        var messageType = BinaryPrimitives.ReadUInt16BigEndian(buffer.Slice(4, 2));
+        var payload = buffer.Slice(HeaderSize, totalLength - HeaderSize).ToArray();
         bytesConsumed = totalLength;
-        return FrameDecodeStatus.Success;
+        frame = new Frame(messageType, payload);
+        return true;
     }
 }
+
+public readonly record struct Frame(ushort MessageType, byte[] Payload);
