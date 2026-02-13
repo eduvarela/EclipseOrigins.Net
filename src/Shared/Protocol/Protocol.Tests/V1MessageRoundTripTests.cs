@@ -10,14 +10,17 @@ public sealed class V1MessageRoundTripTests
     {
         var message = new HandshakeRequest
         {
-            Metadata = CreateMetadata(),
+            ProtocolVersion = "1.0.0",
             ClientName = "game-client"
         };
 
+        message.FeatureFlags.Add("movement");
+        message.FeatureFlags.Add("snapshot");
+
         var copy = RoundTrip(message, HandshakeRequest.Parser);
 
-        Assert.Equal("1.0.0", copy.Metadata.ProtocolVersion);
-        Assert.Equal(new[] { "movement", "snapshot" }, copy.Metadata.FeatureFlags);
+        Assert.Equal("1.0.0", copy.ProtocolVersion);
+        Assert.Equal(new[] { "movement", "snapshot" }, copy.FeatureFlags);
         Assert.Equal("game-client", copy.ClientName);
     }
 
@@ -26,16 +29,19 @@ public sealed class V1MessageRoundTripTests
     {
         var message = new HandshakeResponse
         {
-            Metadata = CreateMetadata(),
+            ProtocolVersion = "1.0.0",
             Accepted = true,
             Message = "ready"
         };
+
+        message.FeatureFlags.Add("movement");
 
         var copy = RoundTrip(message, HandshakeResponse.Parser);
 
         Assert.True(copy.Accepted);
         Assert.Equal("ready", copy.Message);
-        Assert.Equal("1.0.0", copy.Metadata.ProtocolVersion);
+        Assert.Equal("1.0.0", copy.ProtocolVersion);
+        Assert.Equal(new[] { "movement" }, copy.FeatureFlags);
     }
 
     [Fact]
