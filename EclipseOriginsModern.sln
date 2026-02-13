@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameServer", "src\Server\Ga
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Protocol.Tests", "src\Shared\Protocol\Protocol.Tests\Protocol.Tests.csproj", "{A601CC05-4EF6-4C81-89EF-5CAB452B169D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameServer.Tests", "tests\Server\GameServer.Tests\GameServer.Tests.csproj", "{B4D9A302-C23B-4E2F-AC33-4C5E7EF3A9A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{A601CC05-4EF6-4C81-89EF-5CAB452B169D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A601CC05-4EF6-4C81-89EF-5CAB452B169D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A601CC05-4EF6-4C81-89EF-5CAB452B169D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4D9A302-C23B-4E2F-AC33-4C5E7EF3A9A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4D9A302-C23B-4E2F-AC33-4C5E7EF3A9A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4D9A302-C23B-4E2F-AC33-4C5E7EF3A9A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4D9A302-C23B-4E2F-AC33-4C5E7EF3A9A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
