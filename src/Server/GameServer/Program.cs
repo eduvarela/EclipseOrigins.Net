@@ -1,14 +1,11 @@
-using EclipseOriginsModern.Server.GameServer.Net.Dispatch;
-using EclipseOriginsModern.Server.GameServer.Net.Security;
-using EclipseOriginsModern.Shared.Protocol;
+using System;
 
-var startupPing = new PingMessage(DateTimeOffset.UtcNow);
-Console.WriteLine($"GameServer bootstrap OK ({startupPing.SentAt:O})");
+namespace EclipseOrigins.GameServer;
 
-var dispatcher = new MessageDispatcher(
-    new RateLimiter(maxMessagesPerWindow: 30, window: TimeSpan.FromSeconds(1)),
-    new AbuseDetector(violationsBeforeDisconnect: 5, backoffDuration: TimeSpan.FromSeconds(2)));
-
-// Example server wiring: all inbound messages should be routed through this dispatcher.
-_ = dispatcher;
-
+internal static class Program
+{
+    private static void Main()
+    {
+        Console.WriteLine("Eclipse Origins Modern Server bootstrap placeholder.");
+    }
+}

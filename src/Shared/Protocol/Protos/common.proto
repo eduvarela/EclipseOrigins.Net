@@ -1,20 +1,14 @@
 syntax = "proto3";
 
 package eclipseorigins.protocol.v1;
-option csharp_namespace = "EclipseOrigins.Protocol.V1";
 
-message ProtocolMetadata {
-  string protocol_version = 1;
-  repeated string feature_flags = 2;
+option csharp_namespace = "EclipseOrigins.Shared.Protocol.V1";
+
+message FeatureFlags {
+  repeated string values = 1;
 }
 
-message HandshakeRequest {
-  ProtocolMetadata metadata = 1;
-  string client_name = 2;
-}
-
-message HandshakeResponse {
-  ProtocolMetadata metadata = 1;
-  bool accepted = 2;
-  string message = 3;
+message Vector2 {
+  float x = 1;
+  float y = 2;
 }

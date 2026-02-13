@@ -1,20 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <AssemblyName>EclipseOrigins.Shared.Protocol</AssemblyName>
+    <RootNamespace>EclipseOrigins.Shared.Protocol</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Shared.Abstractions/Shared.Abstractions.csproj" />
+    <PackageReference Include="Google.Protobuf" Version="3.27.3" />
+    <PackageReference Include="Grpc.Tools" Version="2.66.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.29.3" />
-    <PackageReference Include="Grpc.Tools" Version="2.69.0" PrivateAssets="all" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Protobuf Include="Protos/*.proto" GrpcServices="None" ProtoRoot="Protos" />
+    <Protobuf Include="Protos/common.proto" ProtoRoot="Protos" GrpcServices="None" />
+    <Protobuf Include="Protos/auth.proto" ProtoRoot="Protos" GrpcServices="None" />
+    <Protobuf Include="Protos/world.proto" ProtoRoot="Protos" GrpcServices="None" />
   </ItemGroup>
 </Project>
