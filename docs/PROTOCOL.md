@@ -1,55 +1,68 @@
-# Network Protocol Standard
+# Network Protocol Policy
 
 ## Scope
-This document defines the application protocol used between the MonoGame client and socket-based .NET server.
-
-## Message Categories
-All protobuf contracts must be categorized for routing, validation, and compatibility checks:
-
-1. **Session & Handshake**
-   - connect, version negotiation, authentication, keepalive/ping.
-2. **Command (Client -> Server)**
-   - player intent (movement, interaction, inventory actions, chat send).
-3. **State Snapshot/Delta (Server -> Client)**
-   - authoritative world state, entity updates, map/region streaming.
-4. **Event/Broadcast (Server -> Client)**
-   - combat outcomes, loot events, social/system notifications.
-5. **Control & Diagnostics (Both ways, restricted)**
-   - protocol errors, throttling notices, admin/ops messages.
-
-## Framing Assumptions
-- Transport is reliable sockets (TCP or equivalent reliable stream).
-- Each protobuf payload is sent as a **length-prefixed frame**:
-  - 4-byte unsigned length prefix (network byte order), followed by raw protobuf bytes.
-- Receivers must support partial reads and reassembly before decode.
-- Maximum accepted frame size must be explicitly bounded server-side to mitigate abuse.
+This document defines protocol versioning, message categories, and compatibility strategy for client/server communication.
 
 ## Versioning Policy
-- Protocol uses semantic version tuple: `MAJOR.MINOR.PATCH`.
-- **MAJOR** increments for incompatible wire changes.
-- **MINOR** increments for backward-compatible field additions/new messages.
-- **PATCH** increments for non-wire clarifications (docs/validation semantics) only.
+Protocol versions use `MAJOR.MINOR.PATCH` semantics.
 
-### Protobuf Schema Rules
+- **MAJOR**: breaking wire compatibility changes.
+  - Examples: field renumbering, removed message types without fallback, framing changes.
+- **MINOR**: additive backward-compatible changes.
+  - Examples: new optional fields, new message types, additional enum values with safe default handling.
+- **PATCH**: non-wire behavior clarification or bugfix notes.
+  - Examples: stricter validation wording, docs corrections, operational guidance.
+
+### Schema Rules
 - Never reuse removed field numbers.
-- Reserve field numbers/names when deprecating.
-- Additive-only changes in a MAJOR line (new optional fields/messages).
-- Required fields are disallowed for gameplay messages; use optional with validation rules.
+- Reserve field numbers and names when deprecating.
+- Prefer optional/additive evolution within the same major line.
+- Avoid required fields for gameplay traffic; enforce requirements via validation rules.
+
+## Message Categories
+All protocol messages must be explicitly classified:
+
+1. **Handshake & Session**
+   - Version negotiation, authentication bootstrap, keepalive.
+2. **Client Commands**
+   - Player intent (movement, inventory actions, interaction requests).
+3. **World State**
+   - Snapshots, deltas, and entity updates from server to client.
+4. **Events & Broadcasts**
+   - Combat outcomes, chat/system notifications, region/global events.
+5. **Control & Diagnostics**
+   - Throttling notices, protocol errors, admin/ops signaling.
+
+Each category must define:
+- Direction (`C->S`, `S->C`, or bidirectional).
+- Rate/size limits.
+- Validation and authorization expectations.
 
 ## Compatibility Strategy
-- Server advertises supported protocol range at handshake (`minSupported`, `maxSupported`).
-- Client sends its protocol version before login.
-- Connection is accepted only when client version is within server range.
-- During active development, server may support **N and N-1 MINOR** versions in same MAJOR.
-- If version mismatch occurs, server returns explicit incompatibility response and closes gracefully.
 
-## Validation & Safety
-- All incoming command messages are validated against authoritative world rules.
-- Unknown protobuf fields must be ignored (forward compatibility) unless security policy blocks the message category.
-- Server enforces per-category rate limits and disconnect thresholds for malformed frames.
+### Negotiation
+- Client sends `clientProtocolVersion` during initial handshake.
+- Server responds with capability range: `minSupportedVersion` and `maxSupportedVersion`.
+- Session proceeds only when client version falls within server range.
 
-## Evolution Workflow
-1. Update protobuf contract in `Shared/Protocol`.
-2. Record compatibility impact and version bump decision in this document.
-3. Regenerate code and update both client/server handlers.
-4. Add regression tests for mixed-version handshake behavior.
+### Support Window
+- Active releases should support `current MINOR` and `current MINOR - 1` within the same major when feasible.
+- MAJOR mismatch is a hard reject.
+
+### Mismatch Behavior
+On incompatibility, server must:
+1. Return explicit version mismatch response code.
+2. Include supported range metadata.
+3. Close connection gracefully.
+
+## Framing and Safety
+- Transport is reliable stream sockets.
+- Payload framing is length-prefixed (`uint32` network byte order + protobuf payload).
+- Receivers must support partial reads/reassembly.
+- Server must enforce max frame size, malformed frame thresholds, and per-category rate limits.
+
+## Change Workflow
+1. Update shared protocol schema/contracts.
+2. Classify the change (MAJOR/MINOR/PATCH) and record rationale here.
+3. Regenerate/update both client and server handlers.
+4. Add/refresh compatibility tests (handshake, mixed-version behavior, fallback paths).
