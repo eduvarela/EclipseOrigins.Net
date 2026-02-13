@@ -8,4 +8,13 @@
   <ItemGroup>
     <ProjectReference Include="../Shared.Abstractions/Shared.Abstractions.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.29.3" />
+    <PackageReference Include="Grpc.Tools" Version="2.69.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos/*.proto" GrpcServices="None" ProtoRoot="Protos" />
+  </ItemGroup>
 </Project>

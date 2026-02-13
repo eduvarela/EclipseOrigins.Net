@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package eclipseorigins.protocol.v1;
+option csharp_namespace = "EclipseOrigins.Protocol.V1";
+
+import "common.proto";
+
+message LoginRequest {
+  ProtocolMetadata metadata = 1;
+  string username = 2;
+  string password = 3;
+}
+
+message LoginResponse {
+  ProtocolMetadata metadata = 1;
+  bool success = 2;
+  string session_token = 3;
+  string message = 4;
+}
